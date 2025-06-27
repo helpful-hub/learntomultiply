@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Multiplication Practice</title>
+  <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      margin: 0;
+      display: block;
+    }
+    .main {
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow-y: auto;
+    }
+    .main h1 {
+      font-size: 48px;
+      color: #3a7bd5;
+      font-family: 'Comic Neue', cursive;
+      text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.1);
+      margin-bottom: 10px;
+    }
+    .top-bar {
+      display: flex;
+      justify-content: center;
+      margin: 20px;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .top-bar button {
+      width: 50px;
+      height: 50px;
+      font-size: 18px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: bold;
+      background: linear-gradient(to top left, #00ff88, #00cc66);
+      box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.2);
+      color: #fff;
+      transition: transform 0.2s ease;
+    }
+    .learn-instruction {
+      font-size: 22px;
+      font-weight: bold;
+      margin-top: 20px;
+      color: #00cc66;
+      text-align: center;
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+    .learn-instruction.still {
+      animation: none;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.05); opacity: 0.8; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .practice-layout {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 60px;
+      margin-top: 20px;
+      flex-wrap: nowrap;
+    }
+    .practice-table {
+      border-collapse: collapse;
+      font-size: 22px;
+    }
+    .practice-table td {
+      padding: 12px 20px;
+    }
+    .practice-table tr:nth-child(even) {
+      background-color: #eef6ff;
+    }
+    .practice-table tr:nth-child(odd) {
+      background-color: #f9f9f9;
+    }
+    .drop-box {
+      width: 60px;
+      height: 40px;
+      border: 2px dashed #888;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      background: #ffffff;
+      transition: background-color 0.3s ease;
+    }
+    .drop-box.filled {
+      background-color: #d4edda;
+      border: 2px solid #5cb85c;
+    }
+    .draggable-container {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      position: sticky;
+      top: 100px;
+    }
+    .draggable {
+      padding: 10px 15px;
+      background: linear-gradient(to top left, #4b6cb7, #5a7ce2);
+      color: white;
+      font-weight: bold;
+      border-radius: 10px;
+      text-align: center;
+      cursor: grab;
+      min-width: 60px;
+    }
+    .draggable.hidden {
+      display: none;
+    }
+    .shake {
+      animation: shake 0.3s;
+    }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      50% { transform: translateX(5px); }
+      75% { transform: translateX(-5px); }
+    }
+    #practice-btn {
+      margin: 30px auto 0;
+      padding: 12px 20px;
+      font-size: 18px;
+      border: none;
+      border-radius: 10px;
+      background: #00cc66;
+      color: white;
+      cursor: pointer;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="main">
+    <h1 id="page-title">Multiplication Practice</h1>
+    <div class="top-bar" id="table-buttons"></div>
+    <div class="output" id="output">
+      <p class="learn-instruction" id="instruction">Click a number above to explore its multiplication table</p>
+    </div>
+    <button id="practice-btn" onclick="renderPracticeTable(currentTable, true)">Keep Practicing</button>
+  </div>
+
+  <!-- 🔊 Main sound effect used on load -->
+  <audio id="learnSound" src="twinklesparkle.mp3" preload="auto"></audio>
+
+  <script>
+    const tableButtons = document.getElementById('table-buttons');
+    const output = document.getElementById('output');
+    const instruction = document.getElementById('instruction');
+    const pageTitle = document.getElementById('page-title');
+    const learnSound = document.getElementById('learnSound');
+    const keepPracticingBtn = document.getElementById('practice-btn');
+    let currentMode = 'practice';
+    let currentTable = 0;
+
+    function switchMode(mode) {
+      currentMode = mode;
+      output.innerHTML = '<p class="learn-instruction" id="instruction">Click a number above to explore its multiplication table</p>';
+      pageTitle.textContent = 'Practice Tables';
+      keepPracticingBtn.style.display = 'none';
+    }
+
+    function renderPracticeTable(n, shuffle = false) {
+      currentTable = n;
+      keepPracticingBtn.style.display = 'block';
+      const questions = Array.from({ length: 13 }, (_, i) => i);
+      const order = shuffle ? [...questions].sort(() => Math.random() - 0.5) : questions;
+
+      let html = '<p class="learn-instruction still">Click a number above to explore its multiplication table</p>';
+      html += '<div class="practice-layout">';
+      html += '<table class="practice-table">';
+      for (let i of order) {
+        html += `<tr id="row-${i}"><td>${n} × ${i} =</td><td><div class="drop-box" ondragover="event.preventDefault()" ondrop="checkAnswer(event, ${n * i}, this, ${i})"></div></td></tr>`;
+      }
+      html += '</table>';
+
+      let answers = questions.map(i => n * i).sort(() => Math.random() - 0.5);
+      html += '<div class="draggable-container" id="answers">';
+      for (let ans of answers) {
+        html += `<div class="draggable" draggable="true" ondragstart="drag(event)" data-value="${ans}" id="ans-${ans}">${ans}</div>`;
+      }
+      html += '</div></div>';
+      output.innerHTML = html;
+      learnSound.pause();
+      learnSound.currentTime = 0;
+      learnSound.play();
+    }
+
+    function drag(event) {
+      event.dataTransfer.setData("text", event.target.dataset.value);
+    }
+
+    function checkAnswer(event, correctValue, dropBox, index) {
+      const droppedValue = event.dataTransfer.getData("text");
+      if (parseInt(droppedValue) === correctValue) {
+        dropBox.textContent = droppedValue;
+        dropBox.classList.add('filled');
+        const audio = new Audio('dingsb.mp3');
+        audio.muted = learnSound.muted; // Respect global mute
+        audio.play();
+        document.getElementById(`ans-${droppedValue}`).classList.add('hidden');
+      } else {
+        const row = document.getElementById(`row-${index}`);
+        row.classList.add('shake');
+        const audio = new Audio('wrong.mp3');
+        audio.muted = learnSound.muted; // Respect global mute
+        audio.play();
+        setTimeout(() => row.classList.remove('shake'), 500);
+      }
+    }
+
+    for (let i = 0; i <= 12; i++) {
+      const btn = document.createElement('button');
+      btn.textContent = i;
+      btn.onclick = () => {
+        if (currentMode === 'practice') renderPracticeTable(i);
+      };
+      tableButtons.appendChild(btn);
+    }
+
+    // ✅ Listen for parent message to mute/unmute
+    window.addEventListener('message', function(event) {
+      if (event.data && event.data.type === 'TOGGLE_SOUND') {
+        const isSoundOn = event.data.soundOn;
+        learnSound.muted = !isSoundOn;
+        console.log('Sound is now', isSoundOn ? 'ON' : 'OFF');
+      }
+    });
+  </script>
+</body>
+</html>

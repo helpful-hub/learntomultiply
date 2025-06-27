@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Multiplication Site</title>
+  <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      background: url('https://www.transparenttextures.com/patterns/cubes.png') repeat;
+      margin: 0;
+      display: flex;
+    }
+    .sidebar {
+      background: linear-gradient(135deg, #4b6cb7, #182848);
+      padding: 20px;
+      width: 200px;
+      border-right: 3px solid #222;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      box-shadow: 3px 0 10px rgba(0,0,0,0.2);
+      height: 100vh;
+      color: white;
+      position: sticky;
+      top: 0;
+    }
+    .sidebar button {
+      width: 160px;
+      padding: 12px;
+      font-size: 16px;
+      border: none;
+      border-radius: 12px;
+      background-color: #5cb85c;
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .sidebar button:hover {
+      background-color: #4cae4c;
+      transform: scale(1.05);
+    }
+    .main {
+      flex: 1;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      height: 100vh;
+    }
+    iframe {
+      flex: 1;
+      border: none;
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <button onclick="loadPage('learn.html')">Learn</button>
+    <button onclick="loadPage('practice.html')">Practice</button>
+    <button onclick="loadPage('flashcard.html')">Flash Card</button>
+    <button onclick="loadPage('worksheet.html')">Worksheet</button>
+    <button id="soundToggleBtn" onclick="toggleSound()">🔊 Sound On</button>
+  </div>
+  <div class="main">
+    <iframe id="contentFrame" src="learn.html"></iframe>
+  </div>
+
+  <script>
+    let soundOn = true;
+
+    function loadPage(page) {
+      document.getElementById('contentFrame').src = page;
+    }
+
+    function toggleSound() {
+      soundOn = !soundOn;
+      const btn = document.getElementById('soundToggleBtn');
+      btn.textContent = soundOn ? '🔊 Sound On' : '🔇 Sound Off';
+      
+      // If you want to actually mute/unmute audio on the page:
+      const iframe = document.getElementById('contentFrame');
+      const iframeWindow = iframe.contentWindow;
+      if (iframeWindow) {
+        try {
+          iframeWindow.postMessage({ type: 'TOGGLE_SOUND', soundOn: soundOn }, '*');
+        } catch (e) {
+          console.warn('Sound control message failed:', e);
+        }
+      }
+    }
+  </script>
+</body>
+</html>
